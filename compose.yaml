@@ -42,7 +42,7 @@ services:
       - localweb
       - db
     environment:
-      - DEFAULT_HOST=terrastories.local
+      - DEFAULT_HOST=${HOST_ALIAS}
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./nginx/error_pages:/usr/share/nginx/html:ro
@@ -69,10 +69,10 @@ services:
     environment:
       - PORT=3030
       - VIRTUAL_PORT=3030
-      - VIRTUAL_HOST=terrastories.local
+      - VIRTUAL_HOST=${HOST_ALIAS}
       - CHOKIDAR_USEPOLLING=true
       - USE_LOCAL_MAP_SERVER=true
-      - OFFLINE_MAP_STYLE=http://tileserver.terrastories.local/styles/terrastories-map/style.json
+      - OFFLINE_MAP_STYLE=http://${HOST_ALIAS}:8080/styles/terrastories-map/style.json
 
   tileserver:
     profiles:
@@ -87,7 +87,7 @@ services:
     volumes:
       - ./tileserver/data:/data
     environment:
-      - VIRTUAL_HOST=tileserver.terrastories.local
+      - VIRTUAL_HOST=tileserver.${HOST_ALIAS}
       - VIRTUAL_PORT=8080
 
 volumes:

@@ -4,13 +4,19 @@ set -eu
 profile="dev"
 container="web"
 
-read -p "Setup for offline 'Field Kit' mode? [y/n] " offline
+read -p "Setup for offline 'Field Kit' mode, or a mesh network? [y/n] " offline
 
 if [ "$offline" = "y" ] || [ "$offline" = "Y" ]; then
   container="localweb"
   profile="offline"
 
-  if ! grep -q "terrastories.local" /etc/hosts; then
+  read -p "Do you want to set up your own host alias instead of using terrastories.local? [y/n] " set_alias
+  if [ "$set_alias" = "y" ] || [ "$set_alias" = "Y" ]; then
+    read -p "What do you want your host alias to be? " alias_name
+  else
+    alias_name="terrastories.local"
+  fi
+  if ! grep -q "$alias_name" /etc/hosts; then
     echo
     echo "In order for offline Terrastories to work, you need to configure the"
     echo "instance hostnames on your machine."
@@ -25,14 +31,14 @@ if [ "$offline" = "y" ] || [ "$offline" = "Y" ]; then
     read -p "Your choice: " choice
 
     if [ $choice -eq 2 ]; then
-      sudo -- sh -c "echo '# Added by Terrastories\n127.0.0.1 terrastories.local\n127.0.0.1 tileserver.terrastories.local\n# End of section' >> /etc/hosts"
+      sudo -- sh -c "echo '# Added by Terrastories\n127.0.0.1 $alias_name\n127.0.0.1 tileserver.$alias_name\n# End of section' >> /etc/hosts"
     else
       echo
       echo "In a new terminal, open /etc/hosts with appropriate write permissions"
       echo "and add the following lines:"
       echo
-      echo "  127.0.0.1 terrastories.local"
-      echo "  127.0.0.1 tileserver.terrastories.local"
+      echo "  127.0.0.1 $alias_name"
+      echo "  127.0.0.1 tileserver.$alias_name"
       echo
       read -p "Please go make those changes now. Press any key to continue or q to quit. " -n 1 k
       if [[ "$k" = "q" ]]; then
@@ -46,6 +52,13 @@ fi
 # Copy .env.sample if .env does not exist
 if [ ! -f .env ]; then
   cp .env.example .env
+fi
+
+if ! grep -q "HOST_ALIAS" .env; then
+  sudo -- sh -c "echo '\nHOST_ALIAS=$alias_name' >> .env"
+else
+  sudo sed -i '/HOST_ALIAS/d' .env
+  sudo -- sh -c "echo '\nHOST_ALIAS=$alias_name' >> .env"
 fi
 
 ## init db
@@ -76,4 +89,3 @@ fi
 echo "Boot up your Terrastories instance with the following command:"
 echo
 echo "  docker compose --profile $profile up"
-echo

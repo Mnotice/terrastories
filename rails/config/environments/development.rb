@@ -87,7 +87,7 @@ Rails.application.configure do
 
   # Offline Mode
   if ENV["VIRTUAL_HOST"].present? || ENV["USE_LOCAL_MAP_SERVER"].present?
-    config.hosts << "terrastories.local"
+    config.hosts << ENV["VIRTUAL_HOST"]
     config.hosts << /[a-zA-Z0-9-]*\.terrastories\.local/
   end
 end
